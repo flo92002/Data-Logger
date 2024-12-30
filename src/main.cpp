@@ -32,7 +32,7 @@ uint16_t dataRate = RATE_ADS1115_128SPS; // Change this to RATE_ADS1115_8SPS, RA
 
 volatile bool conversionReady = false;
 volatile uint8_t currentChannel = 0;
-float voltages[2] = {0.0, 0.0};
+int16_t adcValues[2] = {0, 0};
 
 void handleInterrupt() {
   conversionReady = true;
@@ -71,33 +71,8 @@ void configureADS1115(uint8_t channel) {
   writeRegister(ADS1115_REG_CONFIG, config);
 }
 
-float readADCDifferential() {
-  int16_t result = (int16_t)readRegister(ADS1115_REG_CONVERSION);
-
-  // Calculate the voltage based on the gain setting
-  float voltage = 0.0;
-  switch (gain) {
-    case GAIN_TWOTHIRDS:
-      voltage = result * 0.0001875; // 6.144V / 32768
-      break;
-    case GAIN_ONE:
-      voltage = result * 0.000125; // 4.096V / 32768
-      break;
-    case GAIN_TWO:
-      voltage = result * 0.0000625; // 2.048V / 32768
-      break;
-    case GAIN_FOUR:
-      voltage = result * 0.00003125; // 1.024V / 32768
-      break;
-    case GAIN_EIGHT:
-      voltage = result * 0.000015625; // 0.512V / 32768
-      break;
-    case GAIN_SIXTEEN:
-      voltage = result * 0.0000078125; // 0.256V / 32768
-      break;
-  }
-
-  return voltage;
+int16_t readADCDifferential() {
+  return (int16_t)readRegister(ADS1115_REG_CONVERSION);
 }
 
 void setGain(uint16_t newGain) {
@@ -130,7 +105,7 @@ void loop() {
     conversionReady = false;
 
     // Read and store differential measurement for the current channel
-    voltages[currentChannel] = readADCDifferential();
+    adcValues[currentChannel] = readADCDifferential();
 
     // Switch to the next channel
     currentChannel = (currentChannel + 1) % 2;
@@ -139,9 +114,9 @@ void loop() {
     // If both channels have been read, print the results
     if (currentChannel == 0) {
       Serial.print("Dif 1: ");
-      Serial.print(voltages[0], 6); // Print voltage with 6 decimal places
+      Serial.print(adcValues[0]); // Print ADC value
       Serial.print(" Dif 2: ");
-      Serial.print(voltages[1], 6); // Print voltage with 6 decimal places
+      Serial.print(adcValues[1]); // Print ADC value
       Serial.println();
     }
   }
