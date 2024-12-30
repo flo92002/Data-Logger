@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Data Logger",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"esp8266": "cpp"
+		}
+	}
+}
